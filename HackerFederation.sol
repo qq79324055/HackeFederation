@@ -11,8 +11,6 @@ interface Token {
 contract HackerFederation {
     using SafeMath for uint256;
 
-    // HE-1 decimals
-    uint256 public usdtDecimals = 0;
     // Hashrate decimals
     uint256 public constant hashRateDecimals = 5;
     // 10 usdt = 1 T
@@ -68,10 +66,7 @@ contract HackerFederation {
      * - `_superior`: User's inviter
      */
     function buyHashRateWithHE1(uint256 _tokenAmount, address _superior) public {
-        // 
-        uint256 total = _tokenAmount.div(10 ** usdtDecimals);
-        //
-        _buyHashRate(he1TokenAddress, _tokenAmount, total, _superior);
+        _buyHashRate(he1TokenAddress, _tokenAmount, _tokenAmount.div(10**12), _superior);
     }
 
     /**
@@ -83,9 +78,7 @@ contract HackerFederation {
      * - `_superior`: User's inviter
      */
     function buyHashRateWithHE3(uint256 _tokenAmount, address _superior) public {
-        // 
         uint256 totalDai = getHe3ToDai(_tokenAmount);
-        //
         _buyHashRate(he3TokenAddress, _tokenAmount, totalDai.div(10**12), _superior);
     }
 
@@ -155,11 +148,6 @@ contract HackerFederation {
     function updateDaiTokenAddress(address _daiTokenAddress) public onlyOwner {
         daiTokenAddress = _daiTokenAddress;
         tokenDai = Token(daiTokenAddress);
-    }
-
-    //
-    function updateUsdtDecimals(uint256 _newUsdtDecimals) public onlyOwner {
-        usdtDecimals = _newUsdtDecimals;
     }
 
     /**
