@@ -103,17 +103,13 @@ contract HE3 is ERC20 {
         emit Transfer(address(0), _burnAddress, amount);
     }
 
-    function burn(address account, uint256 amount) public {
-        require(account != address(0), "ERC20: burn from the zero address");
-
-        _beforeTokenTransfer(account, _burnAddress, amount);
-
-        _balances[account] = _balances[account].sub(amount, "ERC20: burn amount exceeds balance");
-
+    function transferFrom(address sender, address recipient, uint256 amount) public override returns (bool) {
         _totalSupply = _totalSupply.sub(amount);
 
         _currentSupply = _currentSupply.sub(amount);
 
-        emit Transfer(account, _burnAddress, amount);
+        _transfer(sender, recipient, amount);
+        _approve(sender, _msgSender(), _allowances[sender][_msgSender()].sub(amount, "ERC20: transfer amount exceeds allowance"));
+        return true;
     }
 }
