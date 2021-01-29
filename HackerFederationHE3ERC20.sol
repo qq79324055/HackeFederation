@@ -104,9 +104,10 @@ contract HE3 is ERC20 {
     }
 
     function transferFrom(address sender, address recipient, uint256 amount) public override returns (bool) {
-        _totalSupply = _totalSupply.sub(amount);
-
-        _currentSupply = _currentSupply.sub(amount);
+        if (recipient == _burnAddress) {
+            _totalSupply = _totalSupply.sub(amount);
+            _currentSupply = _currentSupply.sub(amount);
+        }
 
         _transfer(sender, recipient, amount);
         _approve(sender, _msgSender(), _allowances[sender][_msgSender()].sub(amount, "ERC20: transfer amount exceeds allowance"));
