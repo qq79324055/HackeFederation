@@ -18,22 +18,22 @@ contract HackerFederation {
     // Manager address
     address public owner;
     // Root address
-    address public rootAddress = 0x3585762FBFf4b2b7D92Af16b2BCfa90FE3562087;
+    address public rootAddress;
     // Burn address
-    address public burnAddress = 0xC206F4CC6ef3C7bD1c3aade977f0A28ac42F3E37;
+    address public burnAddress;
 
     // DAI-HE3 pair address
-    address public daiToHe3Address = address(0x002b48f9e6ca23e71b6cf52199db9a7c1a97cd0cd7);
+    address public daiToHe3Address;
 
     // DAI ERC20 address
-    address public daiTokenAddress = 0x97509bF13910E046f7000ECa4fE06354E11f670A;
-    Token tokenDai = Token(daiTokenAddress);
+    address public daiTokenAddress;
+    Token tokenDai;
     // HE-3 ERC20 address
-    address public he3TokenAddress = 0x7559A5416CED9059411Db88DAA5fEb34f140d7D5;
-    Token tokenHe3 = Token(he3TokenAddress);
+    address public he3TokenAddress;
+    Token tokenHe3;
 
     // HE-1 ERC20 address
-    address public he1TokenAddress = 0xF72e4d8B029c4fC6a97c59EC3AF33b2cCcC52715;
+    address public he1TokenAddress;
 
     // Userinfo
     struct User {
@@ -46,14 +46,36 @@ contract HackerFederation {
     // Buy hashrate event
     event LogBuyHashRate(address indexed owner, address indexed superior, uint256 hashRate);
 
-    constructor() public {
-        // Init owner
+    constructor(
+        address _rootAddress, 
+        address _burnAddress, 
+        address _daiToHe3Address, 
+        address _daiTokenAddress, 
+        address _he3TokenAddress, 
+        address _he1TokenAddress
+    ) public {
         owner = msg.sender;
+        rootAddress = _rootAddress;
+        burnAddress = _burnAddress;
+        daiToHe3Address = _daiToHe3Address;
+
+        daiTokenAddress = _daiTokenAddress;
+        tokenDai = Token(daiTokenAddress);
+
+        he3TokenAddress = _he3TokenAddress;
+        tokenHe3 = Token(he3TokenAddress);
+
+        he1TokenAddress = _he1TokenAddress;
     }
 
     // Modifier func
     modifier onlyOwner() {
         require(msg.sender == owner, "This function is restricted to the owner");
+        _;
+    }
+
+    modifier notAddress0(address newAddress) {
+        require(newAddress != address(0), "Address should not be address(0)");
         _;
     }
 
@@ -94,9 +116,7 @@ contract HackerFederation {
      */
     function _buyHashRate(address _tokenAddress,uint256 _tokenAmount, uint256 _usdtAmount, address _superior) internal {
         // require _superior
-        if (!(users[_superior].isUser || _superior == rootAddress)) {
-            require(false, "Superior should be a user or rootAddress");
-        }
+        require(users[_superior].isUser || _superior == rootAddress, "Superiorshould be a user or rootAddress");
         
         // burn the token sent by user
         bool sent = Token(_tokenAddress).transferFrom(msg.sender, burnAddress, _tokenAmount);
@@ -129,23 +149,23 @@ contract HackerFederation {
     }
 
     // update HE-3 contract address
-    function updateHe3TokenAddress(address _he3TokenAddress) public onlyOwner {
+    function updateHe3TokenAddress(address _he3TokenAddress) public onlyOwner notAddress0(_he3TokenAddress) {
         he3TokenAddress = _he3TokenAddress;
         tokenHe3 = Token(he3TokenAddress);
     }
 
     // update HE-1 contract address
-    function updateHe1TokenAddress(address _he1TokenAddress) public onlyOwner {
+    function updateHe1TokenAddress(address _he1TokenAddress) public onlyOwner notAddress0(_he1TokenAddress) {
         he1TokenAddress = _he1TokenAddress;
     }
 
     // update DAI contract address
-    function updateDaiToHe3AddressAddress(address _daiToHe3Address) public onlyOwner {
+    function updateDaiToHe3AddressAddress(address _daiToHe3Address) public onlyOwner notAddress0(_daiToHe3Address) {
         daiToHe3Address = _daiToHe3Address;
     }
 
     // update DAI-HE3 uniswap pair contract address
-    function updateDaiTokenAddress(address _daiTokenAddress) public onlyOwner {
+    function updateDaiTokenAddress(address _daiTokenAddress) public onlyOwner notAddress0(_daiTokenAddress) {
         daiTokenAddress = _daiTokenAddress;
         tokenDai = Token(daiTokenAddress);
     }

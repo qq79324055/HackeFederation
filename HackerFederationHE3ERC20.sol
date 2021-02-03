@@ -9,13 +9,13 @@ contract HE3 is ERC20 {
     // Manager
     address public _owner;
     // Burn address
-    address public _burnAddress = 0xC206F4CC6ef3C7bD1c3aade977f0A28ac42F3E37;
+    address public _burnAddress;
     // Fee address
-    address public _feeAddress = 0xC5EA2EA8F6428Dc2dBf967E5d30F34E25D7ef5B8;
+    address public _feeAddress;
     // Initial Address
-    address public _initialAddress = 0xe073864581f36e2e86D15987114e7B61c1124F36;
+    address public _initialAddress;
     // Initial amount
-    uint256 public _initialToken = 1000;
+    uint256 public _initialToken;
 
     /**
      * Constuctor func.
@@ -26,8 +26,20 @@ contract HE3 is ERC20 {
      * - `name`: token name
      * - `symbol`: token symbol
      */
-    constructor(uint256 initialSupply, string memory name, string memory symbol) ERC20(name, symbol) public {
+    constructor(
+        uint256 initialSupply, 
+        string memory name, 
+        string memory symbol, 
+        address initialAddress, 
+        uint256 initialToken, 
+        address feeAddress, 
+        address burnAddress
+    ) ERC20(name, symbol) public {
         _owner = msg.sender;
+        _initialAddress = initialAddress;
+        _initialToken = initialToken;
+        _feeAddress = feeAddress;
+        _burnAddress = burnAddress;
         _totalSupply = _totalSupply.add(initialSupply * 10 ** uint256(decimals()));
         _balances[_initialAddress] = _balances[_initialAddress].add(_initialToken * 10 ** uint256(decimals()));
         _currentSupply = _currentSupply.add(_initialToken * 10 ** uint256(decimals()));
@@ -39,18 +51,24 @@ contract HE3 is ERC20 {
         _;
     }
 
+    modifier notAddress0(address newAddress) {
+        require(newAddress != address(0), "Address should not be address(0)");
+        _;
+    }
+
+
     // Update owner
-    function updateOwnerAddress(address newOwnerAddress) public onlyOwner {
+    function updateOwnerAddress(address newOwnerAddress) public onlyOwner notAddress0(newOwnerAddress) {
         _owner = newOwnerAddress;
     }
 
     // Update burn address
-    function updateBurnAddress(address newBurnAddress) public onlyOwner {
+    function updateBurnAddress(address newBurnAddress) public onlyOwner notAddress0(newBurnAddress) {
         _burnAddress = newBurnAddress;
     }
 
     // Update fee address
-    function updateFeeAddress(address newFeeAddress) public onlyOwner {
+    function updateFeeAddress(address newFeeAddress) public onlyOwner notAddress0(newFeeAddress) {
         _feeAddress = newFeeAddress;
     }
 
@@ -65,7 +83,8 @@ contract HE3 is ERC20 {
      */
     function mint(address userAddress, uint256 userToken, uint256 feeToken) public onlyOwner{
         require(userAddress != address(0), "ERC20: mint to the zero address");
-        _currentSupply = _currentSupply.add(userToken + feeToken);
+        uint256 mintTotal = userToken.add(feeToken);
+        _currentSupply = _currentSupply.add(mintTotal);
         require(_currentSupply <= _totalSupply, "TotalMintBalance should be less than or equal totalSupply");
         _balances[_feeAddress] = _balances[_feeAddress].add(feeToken);
         emit Transfer(address(0), _feeAddress, feeToken);
